@@ -1,0 +1,38 @@
+version: 0.2
+env:
+  parameter-store:
+    DBHOST: "/production/pet-store/dbhostname"
+    DBPORT: "/production/pet-store/dbport"
+    DBUSER: "/production/pet-store/dbusername"
+    DBPASSWD: "/production/pet-store/dbpassword"
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - $(aws ecr get-login --region us-east-1 --no-include-email)
+      - REPOSITORY_URI=509130302659.dkr.ecr.us-east-1.amazonaws.com/petstore
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+  build:
+    commands:
+      - echo Build started on `date`
+      - rm -rf composer.lock
+      - echo "DB_HOST=$DBHOST" >> .env
+      - echo "DB_PORT=$DBPORT" >> .env
+      - echo "DB_USERNAME=$DBUSER" >> .env
+      - echo "DB_PASSWORD=$DBPASSWD" >> .env
+      - docker run --rm -v $(pwd):/app composer install
+      - echo Building the Docker image...          
+      - docker build -t $REPOSITORY_URI:latest -f="app.docker" .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"app","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+artifacts:
+    files: imagedefinitions.json

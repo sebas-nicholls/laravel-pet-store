@@ -1,0 +1,7 @@
+FROM alpine:latest
+
+VOLUME /var/www
+WORKDIR /var/www
+CMD chmod -R 777 ./bootstrap && chmod -R 777 storage && tail -f /dev/null
+COPY . /var/www
+COPY ./.env /var/www
