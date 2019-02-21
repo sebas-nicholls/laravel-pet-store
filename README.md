@@ -8,6 +8,7 @@ Run locally:
 docker run --rm -v $(pwd):/app composer install
 docker-compose up -d
 ```
+Docker-compose runs the containers relevant to the application and maps the `80` port of the webserver container through the host `8080` port
 
 # NOTE
 You have to have a mysql instance running. Edit `.env` file to include:
