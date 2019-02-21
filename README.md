@@ -1,5 +1,5 @@
 # INTRODUCTION
-This repository holds a Pet Store API example developed using PHP laravel project
+This repository holds a Pet Store API example developed using PHP laravel framework
 
 # Setup
 Run locally:
